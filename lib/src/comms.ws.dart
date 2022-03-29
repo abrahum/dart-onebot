@@ -53,8 +53,7 @@ class WSS extends Comm {
             try {
               final i = ob.eventParser.fromStringEventOrResponse(msg);
               if (i is Event) {
-                print(i.runtimeType);
-                //todo
+                ob.handleEvent(bot, i);
               } else if (i is Response) {
                 bot.handleResponse(i);
               } else {

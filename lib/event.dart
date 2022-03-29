@@ -2,13 +2,21 @@ import 'dart:convert';
 import 'package:onebot/onebot.dart';
 
 const standardEventBuilderMap = {
-  MetaEvent.ty: {HeartbeatEvent.detailTy: HeartbeatEvent._fromJson}
+  MetaEvent.ty: {HeartbeatEvent.detailTy: HeartbeatEvent._fromJson},
+  MessageEvent.ty: {
+    PrivateMessageEvent.detailTy: PrivateMessageEvent._fromJson,
+    GroupMessageEvent.detailTy: GroupMessageEvent._fromJson,
+  },
 };
 
 class EventParser {
-  late final Map<String, Map<String, Event Function(Map<String, dynamic>)>> map;
-  EventParser(
-      [Map<String, Map<String, Event Function(Map<String, dynamic>)>>? extra]) {
+  late final Map<String,
+      Map<String, Event Function(Map<String, dynamic>, SegmentParser)>> map;
+  late final SegmentParser segmentParser;
+  EventParser(this.segmentParser,
+      [Map<String,
+              Map<String, Event Function(Map<String, dynamic>, SegmentParser)>>?
+          extra]) {
     if (extra != null) {
       map = Map.from(standardEventBuilderMap)..addAll(extra);
     } else {
@@ -23,7 +31,7 @@ class EventParser {
     if (fs != null) {
       final f = fs[detailType];
       if (f != null) {
-        return f(json);
+        return f(json, segmentParser);
       }
     }
     return Event._fromJson(json, type, detailType);
@@ -105,10 +113,97 @@ class HeartbeatEvent extends MetaEvent {
       this.interval, num time, [Map<String, dynamic>? extra])
       : super(
             id, impl, plateform, selfId, detailTy, "", time.toDouble(), extra);
-  HeartbeatEvent._fromJson(Map<String, dynamic> json)
+  HeartbeatEvent._fromJson(
+      Map<String, dynamic> json, SegmentParser segmentParser)
       : interval = json.tryRemove('interval') as int,
         super._fromJson(json, detailTy);
 
   @override
   Map<String, dynamic> toJson() => _toJson({'interval': interval});
+}
+
+class MessageEvent extends Event {
+  static const String ty = 'message';
+  MessageEvent(String id, String impl, String plateform, String selfId,
+      String detailType, String subType, double time,
+      [Map<String, dynamic>? extra])
+      : super(
+            id, impl, plateform, ty, selfId, detailType, subType, time, extra);
+  MessageEvent._fromJson(Map<String, dynamic> data, String detailType)
+      : super._fromJson(data, ty, detailType);
+}
+
+class PrivateMessageEvent extends MessageEvent {
+  static const String detailTy = 'private';
+  String messageId, altMessage, userId;
+  List<Segment> message;
+  PrivateMessageEvent(
+      String id,
+      String impl,
+      String plateform,
+      String selfId,
+      String subType,
+      double time,
+      this.messageId,
+      this.altMessage,
+      this.userId,
+      this.message,
+      [Map<String, dynamic>? extra])
+      : super(id, impl, plateform, selfId, detailTy, subType, time, extra);
+  PrivateMessageEvent._fromJson(
+      Map<String, dynamic> data, SegmentParser segmentParser)
+      : messageId = data.tryRemove('message_id') as String,
+        altMessage = data.tryRemove('alt_message') as String,
+        userId = data.tryRemove('user_id') as String,
+        message = (data.tryRemove('message') as List<dynamic>)
+            .map((e) => segmentParser.fromJson(e))
+            .toList(),
+        super._fromJson(data, detailTy);
+
+  @override
+  Map<String, dynamic> toJson() => _toJson({
+        'message_id': messageId,
+        'alt_message': altMessage,
+        'user_id': userId,
+        'message': message,
+      });
+}
+
+class GroupMessageEvent extends MessageEvent {
+  static const String detailTy = 'group';
+  String messageId, altMessage, userId, groupId;
+  List<Segment> message;
+  GroupMessageEvent(
+      String id,
+      String impl,
+      String plateform,
+      String selfId,
+      String subType,
+      double time,
+      this.messageId,
+      this.altMessage,
+      this.userId,
+      this.groupId,
+      this.message,
+      [Map<String, dynamic>? extra])
+      : super(id, impl, plateform, selfId, detailTy, subType, time, extra);
+  GroupMessageEvent._fromJson(
+      Map<String, dynamic> data, SegmentParser segmentParser)
+      : messageId = data.tryRemove('message_id') as String,
+        altMessage = data.tryRemove('alt_message') as String,
+        userId = data.tryRemove('user_id') as String,
+        groupId = data.tryRemove('group_id') as String,
+        message = (data.tryRemove('message') as List<dynamic>)
+            .map((e) => segmentParser.fromJson(e))
+            .toList(),
+        super._fromJson(data, detailTy);
+
+  @override
+  Map<String, dynamic> toJson() => _toJson({
+        'message_id': messageId,
+        'alt_message': altMessage,
+        'user_id': userId,
+        'group_id': groupId,
+        'message': message,
+      });
 }

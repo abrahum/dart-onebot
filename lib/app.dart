@@ -5,12 +5,14 @@ import 'dart:io';
 
 class OneBotApp {
   List<Comm> comms = [];
+  void Function(Bot, Event) eventHandler;
   final EventParser eventParser;
-  OneBotApp({EventParser? eventParser})
-      : eventParser = eventParser ?? EventParser();
-  Future<void> handleEvent(Event event) async {
-    print(event);
-    //todo
+  OneBotApp(this.eventHandler,
+      {EventParser? eventParser, SegmentParser? segmentParser})
+      : eventParser =
+            eventParser ?? EventParser(segmentParser ?? SegmentParser());
+  void handleEvent(Bot bot, Event event) async {
+    eventHandler(bot, event);
   }
 
   int start({List<WSSConfig>? wssConfigs}) {
@@ -34,14 +36,24 @@ class Bot {
   WebSocket socket;
   Map<String, SendPort> waittingMap = {};
   Bot(this.socket);
-  Future<Response> callAction(Action action) async {
+  Future<Response> callAction(Action action, {int timeout = 10}) async {
     var echo = action.echo;
     final rx = ReceivePort();
     if (echo != null) {
       waittingMap.addAll({echo: rx.sendPort});
     }
     socket.add(action.toString());
-    return await rx.first;
+    return await rx.first.timeout(
+      Duration(seconds: timeout),
+      onTimeout: () {
+        waittingMap.remove(echo);
+        throw CallActionTimeout(action);
+      },
+    );
+  }
+
+  Future<Response> getLatestResponse({int limit = 10, int timeout = 10}) async {
+    return await callAction(GetLatestEventsAction(limit, timeout));
   }
 
   void handleResponse(Response resp) async {
