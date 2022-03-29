@@ -6,8 +6,8 @@ const standardActionParserMap = {
 };
 
 class ActionParser {
-  late final Map<String, Function(Map<String, dynamic>)> map;
-  ActionParser([Map<String, Function(Map<String, dynamic>)>? extra]) {
+  late final Map<String, Action Function(Map<String, dynamic>)> map;
+  ActionParser([Map<String, Action Function(Map<String, dynamic>)>? extra]) {
     if (extra != null) {
       map = Map.from(standardActionParserMap)..addAll(extra);
     } else {
@@ -22,7 +22,7 @@ class ActionParser {
     if (f != null) {
       return f(data);
     }
-    return Action(action, data);
+    return Action(action, params: data);
   }
 
   Action fromString(String json) {
@@ -32,17 +32,23 @@ class ActionParser {
 
 class Action {
   String action;
-  Map<String, dynamic> extra;
-  Action(this.action, [Map<String, dynamic>? extra]) : extra = extra ?? {};
+  Map<String, dynamic> params;
+  String? echo;
+  Action(this.action, {Map<String, dynamic>? params, this.echo})
+      : params = params ?? {};
   Map<String, dynamic> data() {
-    return extra;
+    return params;
   }
 
   Map<String, dynamic> toJson() {
-    return {
+    var d = {
       'action': action,
       'params': data(),
     };
+    if (echo != null) {
+      d['echo'] = echo!;
+    }
+    return d;
   }
 
   @override
@@ -53,15 +59,16 @@ class GetLatestEventsAction extends Action {
   static const String ty = 'get_latest_events';
   int limit;
   int timeout;
-  GetLatestEventsAction(this.limit, this.timeout, [Map<String, dynamic>? extra])
-      : super(ty, extra);
+  GetLatestEventsAction(this.limit, this.timeout,
+      {Map<String, dynamic>? extra, String? echo})
+      : super(ty, params: extra, echo: echo);
   GetLatestEventsAction.fromData(Map<String, dynamic> data)
       : limit = data.tryRemove('limit') as int,
         timeout = data.tryRemove('timeout') as int,
-        super(ty, data);
+        super(ty, params: data);
 
   @override
-  Map<String, dynamic> data() => extra
+  Map<String, dynamic> data() => params
     ..addAll({
       'limit': limit,
       'timeout': timeout,
@@ -73,14 +80,16 @@ class Response {
   int retcode;
   Map<String, dynamic> data;
   String message;
+  String? echo;
   Response(this.status, this.retcode,
-      {String? message, Map<String, dynamic>? data})
+      {String? message, Map<String, dynamic>? data, this.echo})
       : message = message ?? '',
         data = data ?? {};
   Response.fromJson(Map<String, dynamic> json)
       : status = json.tryRemove('status') as String,
         retcode = json.tryRemove('retcode') as int,
         message = json.tryRemove('message') as String,
+        echo = json.tryRemove('echo') as String?,
         data = json.tryRemove('data');
 
   Map<String, dynamic> toJson() => {

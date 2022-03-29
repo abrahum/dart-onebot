@@ -15,8 +15,8 @@ const standardSegmentParserMap = {
 };
 
 class SegmentParser {
-  late final Map<String, Function(Map<String, dynamic>)> map;
-  SegmentParser([Map<String, Function(Map<String, dynamic>)>? extra]) {
+  late final Map<String, Segment Function(Map<String, dynamic>)> map;
+  SegmentParser([Map<String, Segment Function(Map<String, dynamic>)>? extra]) {
     if (extra != null) {
       map = Map.from(standardSegmentParserMap)..addAll(extra);
     } else {

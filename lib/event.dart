@@ -6,9 +6,9 @@ const standardEventBuilderMap = {
 };
 
 class EventParser {
-  late final Map<String, Map<String, Function(Map<String, dynamic>)>> map;
+  late final Map<String, Map<String, Event Function(Map<String, dynamic>)>> map;
   EventParser(
-      [Map<String, Map<String, Function(Map<String, dynamic>)>>? extra]) {
+      [Map<String, Map<String, Event Function(Map<String, dynamic>)>>? extra]) {
     if (extra != null) {
       map = Map.from(standardEventBuilderMap)..addAll(extra);
     } else {
@@ -29,17 +29,29 @@ class EventParser {
     return Event._fromJson(json, type, detailType);
   }
 
+  dynamic _eventOrResponse(Map<String, dynamic> json) {
+    try {
+      return fromJson(json);
+    } catch (e) {
+      return Response.fromJson(json);
+    }
+  }
+
   Event fromString(String json) {
     return fromJson(jsonDecode(json));
+  }
+
+  dynamic fromStringEventOrResponse(String json) {
+    return _eventOrResponse(jsonDecode(json));
   }
 }
 
 class Event {
-  String id, impl, plateform, selfId, type, detailType;
+  String id, impl, platform, selfId, type, detailType;
   String subType = '';
   double time;
   Map<String, dynamic> extra;
-  Event(this.id, this.impl, this.plateform, this.type, this.selfId,
+  Event(this.id, this.impl, this.platform, this.type, this.selfId,
       this.detailType, this.subType, this.time,
       [Map<String, dynamic>? extra])
       : extra = extra ?? {};
@@ -56,7 +68,7 @@ class Event {
       ..addAll({
         'id': id,
         'impl': impl,
-        'plateform': plateform,
+        'platform': platform,
         'self_id': selfId,
         'type': type,
         'detail_type': detailType,
@@ -68,7 +80,7 @@ class Event {
   Event._fromJson(Map<String, dynamic> data, this.type, this.detailType)
       : id = data.tryRemove('id') as String,
         impl = data.tryRemove('impl') as String,
-        plateform = data.tryRemove('plateform') as String,
+        platform = data.tryRemove('platform') as String,
         selfId = data.tryRemove('self_id') as String,
         subType = data.tryRemove('sub_type') as String,
         time = data.tryRemove('time') as double,

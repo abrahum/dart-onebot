@@ -1,48 +1,86 @@
 part of 'comms.dart';
 
-class WSS extends Comms {
-  final OneBotImpl ob;
-  String? accessToken;
-  List<WebSocket> sockets;
-  WSS(this.ob, {this.accessToken}) : sockets = [];
+class WSS extends Comm {
+  WSSConfig config;
+  List<WebSocket> sockets = [];
+  HttpServer? server;
+  WSS(this.config);
 
   @override
-  void send(String msg) {
+  int send(String msg) {
+    var count = 0;
     for (final socket in sockets) {
       socket.add(msg);
+      count += 1;
     }
+    return count;
   }
 
-  void serve(InternetAddress address, int port,
-      void Function(OneBotImpl, String) handler,
-      {String? url}) async {
-    final server = await HttpServer.bind(address, port);
-    await server.forEach((HttpRequest req) async {
-      if (url != null) {
-        if (req.uri.path != url) {
-          await req.response.close();
-        }
+  void implStart(OneBotImpl ob) async {
+    server = await HttpServer.bind(config.address, config.port);
+    await server?.forEach((HttpRequest req) async {
+      if (requestCheck(req, config.path, config.accessToken)) {
+        final socket = await WebSocketTransformer.upgrade(req);
+        socket.listen(
+          (msg) async {
+            try {
+              final action = ob.actionParser.fromString(msg);
+              var resp = await ob.handleAction(action);
+              socket.add(resp.toString());
+            } catch (e) {
+              print(e);
+            }
+          },
+          onDone: () => sockets.remove(socket),
+          onError: (e) => sockets.remove(socket),
+        );
+        sockets.add(socket);
+      } else {
+        req.response.statusCode = HttpStatus.forbidden;
+        req.response.close();
       }
-      if (accessToken != null) {
-        if (req.headers.value('access_token') != accessToken) {
-          await req.response.close();
-        }
-      }
-      final socket = await WebSocketTransformer.upgrade(req);
-      socket.listen(
-        (event) => handler(ob, event),
-        onDone: () => sockets.remove(socket),
-        onError: () => sockets.remove(socket),
-      );
-      sockets.add(socket);
     });
   }
-}
 
-void implHandle(OneBotImpl ob, String msg) {
-  try {
-    var action = ob.actionParser.fromString(msg);
-  } catch (e) {
-    print(e); //todo log
+  void appStart(OneBotApp ob) async {
+    server = await HttpServer.bind(config.address, config.port);
+    await server?.forEach((HttpRequest req) async {
+      if (requestCheck(req, config.path, config.accessToken)) {
+        final socket = await WebSocketTransformer.upgrade(req);
+        var bot = Bot(socket);
+        socket.listen(
+          (msg) async {
+            try {
+              final i = ob.eventParser.fromStringEventOrResponse(msg);
+              if (i is Event) {
+                print(i.runtimeType);
+                //todo
+              } else if (i is Response) {
+                bot.handleResponse(i);
+              } else {
+                print('unknown:$i');
+              }
+            } catch (e) {
+              print('error:$e');
+            }
+          },
+          onDone: () => sockets.remove(socket),
+          onError: (e) => sockets.remove(socket),
+        );
+        sockets.add(socket);
+      } else {
+        req.response.statusCode = HttpStatus.forbidden;
+        req.response.close();
+      }
+    });
+  }
+
+  @override
+  void close() {
+    for (final s in sockets) {
+      s.close();
+    }
+    sockets.clear();
+    server?.close();
   }
 }
