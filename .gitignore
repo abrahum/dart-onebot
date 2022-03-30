@@ -2,6 +2,8 @@
 .dart_tool/
 .packages
 
+Rikka.toml
+
 # Conventional directory for build outputs.
 build/
 

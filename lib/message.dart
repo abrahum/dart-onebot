@@ -33,6 +33,10 @@ class SegmentParser {
     }
     return Segment(type, data);
   }
+
+  List<Segment> fromJsonList(List<Map<String, dynamic>> json) {
+    return json.map((e) => fromJson(e)).toList();
+  }
 }
 
 class Segment {

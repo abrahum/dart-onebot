@@ -127,24 +127,14 @@ class HeartbeatEvent extends MetaEvent {
 
 class MessageEvent extends Event {
   static const String ty = 'message';
-  MessageEvent(String id, String impl, String plateform, String selfId,
-      String detailType, String subType, double time,
-      [Map<String, dynamic>? extra])
-      : super(
-            id, impl, plateform, ty, selfId, detailType, subType, time, extra);
-  MessageEvent._fromJson(Map<String, dynamic> data, String detailType)
-      : super._fromJson(data, ty, detailType);
-}
-
-class PrivateMessageEvent extends MessageEvent {
-  static const String detailTy = 'private';
   String messageId, altMessage, userId;
   List<Segment> message;
-  PrivateMessageEvent(
+  MessageEvent(
       String id,
       String impl,
       String plateform,
       String selfId,
+      String detailType,
       String subType,
       double time,
       this.messageId,
@@ -152,16 +142,36 @@ class PrivateMessageEvent extends MessageEvent {
       this.userId,
       this.message,
       [Map<String, dynamic>? extra])
-      : super(id, impl, plateform, selfId, detailTy, subType, time, extra);
-  PrivateMessageEvent._fromJson(
-      Map<String, dynamic> data, SegmentParser segmentParser)
+      : super(
+            id, impl, plateform, ty, selfId, detailType, subType, time, extra);
+  MessageEvent._fromJson(
+      Map<String, dynamic> data, SegmentParser segmentParser, String detailType)
       : messageId = data.tryRemove('message_id') as String,
         altMessage = data.tryRemove('alt_message') as String,
         userId = data.tryRemove('user_id') as String,
-        message = (data.tryRemove('message') as List<dynamic>)
-            .map((e) => segmentParser.fromJson(e))
-            .toList(),
-        super._fromJson(data, detailTy);
+        message = segmentParser.fromJsonList(data.tryRemove('message')),
+        super._fromJson(data, ty, detailType);
+}
+
+class PrivateMessageEvent extends MessageEvent {
+  static const String detailTy = 'private';
+  PrivateMessageEvent(
+      String id,
+      String impl,
+      String plateform,
+      String selfId,
+      String subType,
+      double time,
+      String messageId,
+      String altMessage,
+      String userId,
+      List<Segment> message,
+      [Map<String, dynamic>? extra])
+      : super(id, impl, plateform, selfId, detailTy, subType, time, messageId,
+            altMessage, userId, message, extra);
+  PrivateMessageEvent._fromJson(
+      Map<String, dynamic> data, SegmentParser segmentParser)
+      : super._fromJson(data, segmentParser, detailTy);
 
   @override
   Map<String, dynamic> toJson() => _toJson({
@@ -174,8 +184,7 @@ class PrivateMessageEvent extends MessageEvent {
 
 class GroupMessageEvent extends MessageEvent {
   static const String detailTy = 'group';
-  String messageId, altMessage, userId, groupId;
-  List<Segment> message;
+  String groupId;
   GroupMessageEvent(
       String id,
       String impl,
@@ -183,23 +192,18 @@ class GroupMessageEvent extends MessageEvent {
       String selfId,
       String subType,
       double time,
-      this.messageId,
-      this.altMessage,
-      this.userId,
+      String messageId,
+      String altMessage,
+      String userId,
       this.groupId,
-      this.message,
+      List<Segment> message,
       [Map<String, dynamic>? extra])
-      : super(id, impl, plateform, selfId, detailTy, subType, time, extra);
+      : super(id, impl, plateform, selfId, detailTy, subType, time, messageId,
+            altMessage, userId, message, extra);
   GroupMessageEvent._fromJson(
       Map<String, dynamic> data, SegmentParser segmentParser)
-      : messageId = data.tryRemove('message_id') as String,
-        altMessage = data.tryRemove('alt_message') as String,
-        userId = data.tryRemove('user_id') as String,
-        groupId = data.tryRemove('group_id') as String,
-        message = (data.tryRemove('message') as List<dynamic>)
-            .map((e) => segmentParser.fromJson(e))
-            .toList(),
-        super._fromJson(data, detailTy);
+      : groupId = data.tryRemove('group_id') as String,
+        super._fromJson(data, segmentParser, detailTy);
 
   @override
   Map<String, dynamic> toJson() => _toJson({

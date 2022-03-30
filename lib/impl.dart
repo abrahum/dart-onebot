@@ -4,14 +4,12 @@ class OneBotImpl {
   String selfId;
   final String impl, platform;
   final ActionParser actionParser;
-  final SegmentParser segmentParser;
-  List<Comm> comms;
+  List<Comm> comms = [];
 
   OneBotImpl(this.impl, this.platform, this.selfId,
       {ActionParser? actionParser, SegmentParser? segmentParser})
-      : actionParser = actionParser ?? ActionParser(),
-        segmentParser = segmentParser ?? SegmentParser(),
-        comms = [];
+      : actionParser =
+            actionParser ?? ActionParser(segmentParser ?? SegmentParser());
 
   int start({List<WSSConfig>? wssConfigs}) {
     for (final config in wssConfigs ?? []) {

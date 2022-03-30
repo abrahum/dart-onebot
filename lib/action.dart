@@ -2,12 +2,17 @@ import 'dart:convert';
 import 'package:onebot/onebot.dart';
 
 const standardActionParserMap = {
-  GetLatestEventsAction.ty: GetLatestEventsAction.fromData,
+  GetLatestEvents.ty: GetLatestEvents.fromData,
+  SendMessage.ty: SendMessage.fromData,
 };
 
 class ActionParser {
-  late final Map<String, Action Function(Map<String, dynamic>)> map;
-  ActionParser([Map<String, Action Function(Map<String, dynamic>)>? extra]) {
+  late final Map<String, Action Function(Map<String, dynamic>, SegmentParser)>
+      map;
+  late final SegmentParser segmentParser;
+  ActionParser(this.segmentParser,
+      [Map<String, Action Function(Map<String, dynamic>, SegmentParser)>?
+          extra]) {
     if (extra != null) {
       map = Map.from(standardActionParserMap)..addAll(extra);
     } else {
@@ -20,7 +25,7 @@ class ActionParser {
     final data = json.tryRemove('data');
     final f = map[action];
     if (f != null) {
-      return f(data);
+      return f(data, segmentParser);
     }
     return Action(action, params: data);
   }
@@ -50,14 +55,13 @@ class Action {
   String toString() => jsonEncode(toJson());
 }
 
-class GetLatestEventsAction extends Action {
+class GetLatestEvents extends Action {
   static const String ty = 'get_latest_events';
-  int limit;
-  int timeout;
-  GetLatestEventsAction(this.limit, this.timeout,
+  int limit, timeout;
+  GetLatestEvents(this.limit, this.timeout,
       {Map<String, dynamic>? extra, String? echo})
       : super(ty, params: extra, echo: echo);
-  GetLatestEventsAction.fromData(Map<String, dynamic> data)
+  GetLatestEvents.fromData(Map<String, dynamic> data, SegmentParser _)
       : limit = data.tryRemove('limit') as int,
         timeout = data.tryRemove('timeout') as int,
         super(ty, params: data);
@@ -67,6 +71,31 @@ class GetLatestEventsAction extends Action {
     ..addAll({
       'limit': limit,
       'timeout': timeout,
+    });
+}
+
+class SendMessage extends Action {
+  static const String ty = 'send_message';
+  String detailType;
+  String? groupId, userId;
+  List<Segment> message;
+  SendMessage(this.detailType, this.message,
+      {Map<String, dynamic>? extra, String? echo, this.groupId, this.userId})
+      : super(ty, params: extra, echo: echo);
+  SendMessage.fromData(Map<String, dynamic> data, SegmentParser segmentParser)
+      : detailType = data.tryRemove('detail_type') as String,
+        groupId = data["group_id"] as String?,
+        userId = data["user_id"] as String?,
+        message = segmentParser.fromJsonList(data.tryRemove('message')),
+        super(ty, params: data);
+
+  @override
+  Map<String, dynamic> data() => params
+    ..addAll({
+      'detail_type': detailType,
+      'message': message,
+      if (groupId != null) 'group_id': groupId,
+      if (userId != null) 'user_id': userId,
     });
 }
 

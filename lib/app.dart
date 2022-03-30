@@ -23,10 +23,10 @@ class OneBotApp {
     }
   }
 
-  int start({List<WSSConfig>? wssConfigs}) {
-    for (final config in wssConfigs ?? []) {
-      final wss = WSS(config);
-      logger.info('start websocket server on ${config.url()}');
+  int start(AppConfig config) {
+    for (final wssConfig in config.websocketRev) {
+      final wss = WSS(wssConfig);
+      logger.info('start websocket server on ${wssConfig.url()}');
       wss.appStart(this);
       comms.add(wss);
     }
@@ -52,11 +52,11 @@ class Bot {
   Map<String, SendPort> waittingMap = {};
   Bot(this.socket);
   Future<Response> callAction(Action action, {int timeout = 10}) async {
-    var echo = action.echo;
+    logger.info('calling action: $action');
+    var echo = DateTime.now().millisecondsSinceEpoch.toString();
+    action.echo = echo;
     final rx = ReceivePort();
-    if (echo != null) {
-      waittingMap.addAll({echo: rx.sendPort});
-    }
+    waittingMap.addAll({echo: rx.sendPort});
     socket.add(action.toString());
     return await rx.first.timeout(
       Duration(seconds: timeout),
@@ -68,7 +68,28 @@ class Bot {
   }
 
   Future<Response> getLatestResponse({int limit = 10, int timeout = 10}) async {
-    return await callAction(GetLatestEventsAction(limit, timeout));
+    return await callAction(GetLatestEvents(limit, timeout));
+  }
+
+  Future<Response> sendMessage(List<Segment> message,
+      {String? userId, String? groupId}) async {
+    return await callAction(SendMessage(
+        (userId != null) ? 'private' : 'group', message,
+        userId: userId, groupId: groupId));
+  }
+
+  Future<Response> sendPrivateMessage(
+    List<Segment> message,
+    String userId,
+  ) async {
+    return await sendMessage(message, userId: userId);
+  }
+
+  Future<Response> sendGroupMessage(
+    List<Segment> message,
+    String groupId,
+  ) async {
+    return await sendMessage(message, groupId: groupId);
   }
 
   void handleResponse(Response resp) async {

@@ -51,6 +51,7 @@ class WSS extends Comm {
     await server?.forEach((HttpRequest req) async {
       if (requestCheck(req, config.path, config.accessToken)) {
         final socket = await WebSocketTransformer.upgrade(req);
+        logger.fine('new websocket connection');
         var bot = Bot(socket);
         socket.listen(
           (msg) async {

@@ -8,6 +8,7 @@ import 'package:logging/logging.dart';
 export 'event.dart';
 export 'message.dart';
 export 'impl.dart';
+export 'app.dart';
 export 'action.dart';
 export 'src/comms.dart';
 export 'src/error.dart';
