@@ -65,7 +65,7 @@ class MentionSegment extends Segment {
   String userId;
   MentionSegment(this.userId, [Map<String, dynamic>? extra]) : super(ty, extra);
   MentionSegment.fromData(Map<String, dynamic> data)
-      : userId = data.tryRemove('userId') as String,
+      : userId = data.tryRemove('uesr_id') as String,
         super(ty, data);
 
   @override
@@ -83,7 +83,7 @@ class ImageSegment extends Segment {
   String fileId;
   ImageSegment(this.fileId, [Map<String, dynamic>? extra]) : super(ty, extra);
   ImageSegment.fromData(Map<String, dynamic> data)
-      : fileId = data.tryRemove('fileId') as String,
+      : fileId = data.tryRemove('file_id') as String,
         super(ty, data);
 
   @override
@@ -95,7 +95,7 @@ class VoiceSegment extends Segment {
   String fileId;
   VoiceSegment(this.fileId, [Map<String, dynamic>? extra]) : super(ty, extra);
   VoiceSegment.fromData(Map<String, dynamic> data)
-      : fileId = data.tryRemove('fileId') as String,
+      : fileId = data.tryRemove('file_id') as String,
         super(ty, data);
 
   @override
@@ -107,7 +107,7 @@ class AudioSegment extends Segment {
   String fileId;
   AudioSegment(this.fileId, [Map<String, dynamic>? extra]) : super(ty, extra);
   AudioSegment.fromData(Map<String, dynamic> data)
-      : fileId = data.tryRemove('fileId') as String,
+      : fileId = data.tryRemove('file_id') as String,
         super(ty, data);
 
   @override
@@ -119,7 +119,7 @@ class VideoSegment extends Segment {
   String fileId;
   VideoSegment(this.fileId, [Map<String, dynamic>? extra]) : super(ty, extra);
   VideoSegment.fromData(Map<String, dynamic> data)
-      : fileId = data.tryRemove('fileId') as String,
+      : fileId = data.tryRemove('file_id') as String,
         super(ty, data);
 
   @override
@@ -131,7 +131,7 @@ class FileSegment extends Segment {
   String fileId;
   FileSegment(this.fileId, [Map<String, dynamic>? extra]) : super(ty, extra);
   FileSegment.fromData(Map<String, dynamic> data)
-      : fileId = data.tryRemove('fileId') as String,
+      : fileId = data.tryRemove('file_id') as String,
         super(ty, data);
 
   @override
@@ -171,8 +171,8 @@ class ReplySegment extends Segment {
   ReplySegment(this.messageId, this.userId, [Map<String, dynamic>? extra])
       : super(ty, extra);
   ReplySegment.fromData(Map<String, dynamic> data)
-      : messageId = data.tryRemove('messageId') as String,
-        userId = data.tryRemove('userId') as String,
+      : messageId = data.tryRemove('message_id') as String,
+        userId = data.tryRemove('user_id') as String,
         super(ty, data);
 
   @override

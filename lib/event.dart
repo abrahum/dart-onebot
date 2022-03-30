@@ -37,11 +37,14 @@ class EventParser {
     return Event._fromJson(json, type, detailType);
   }
 
-  dynamic _eventOrResponse(Map<String, dynamic> json) {
+  dynamic _eor(Map<String, dynamic> json) {
     try {
       return fromJson(json);
-    } catch (e) {
-      return Response.fromJson(json);
+    } on MissFieldError catch (e) {
+      if (e.field == 'type') {
+        return Response.fromJson(json);
+      }
+      rethrow;
     }
   }
 
@@ -49,8 +52,8 @@ class EventParser {
     return fromJson(jsonDecode(json));
   }
 
-  dynamic fromStringEventOrResponse(String json) {
-    return _eventOrResponse(jsonDecode(json));
+  dynamic eorFromString(String json) {
+    return _eor(jsonDecode(json));
   }
 }
 

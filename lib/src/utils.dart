@@ -28,4 +28,7 @@ class WSSConfig {
       this.accessToken = 'token $accessToken';
     }
   }
+  String url() {
+    return 'ws://${address.address}:$port${path ?? ''}';
+  }
 }

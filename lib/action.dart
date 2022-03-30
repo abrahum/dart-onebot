@@ -40,16 +40,11 @@ class Action {
     return params;
   }
 
-  Map<String, dynamic> toJson() {
-    var d = {
-      'action': action,
-      'params': data(),
-    };
-    if (echo != null) {
-      d['echo'] = echo!;
-    }
-    return d;
-  }
+  Map<String, dynamic> toJson() => {
+        'action': action,
+        'params': data(),
+        if (echo != null) 'echo': echo,
+      };
 
   @override
   String toString() => jsonEncode(toJson());
@@ -97,6 +92,7 @@ class Response {
         'retcode': retcode,
         'message': message,
         'data': data,
+        if (echo != null) 'echo': echo,
       };
   factory Response.badRequest() => Response('bad_request', 10001);
   factory Response.unsupportedAction() => Response('Unsupported Action', 10002);

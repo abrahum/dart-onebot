@@ -27,6 +27,10 @@ class WSS extends Comm {
               final action = ob.actionParser.fromString(msg);
               var resp = await ob.handleAction(action);
               socket.add(resp.toString());
+            } on FormatException {
+              socket.add(Response.badRequest().toString());
+            } on MissFieldError {
+              socket.add(Response.badParam().toString());
             } catch (e) {
               print(e);
             }
@@ -51,16 +55,16 @@ class WSS extends Comm {
         socket.listen(
           (msg) async {
             try {
-              final i = ob.eventParser.fromStringEventOrResponse(msg);
+              final i = ob.eventParser.eorFromString(msg);
               if (i is Event) {
                 ob.handleEvent(bot, i);
               } else if (i is Response) {
                 bot.handleResponse(i);
               } else {
-                print('unknown:$i');
+                logger.warning('unknown msg: $msg');
               }
             } catch (e) {
-              print('error:$e');
+              logger.warning('handling error: $e');
             }
           },
           onDone: () => sockets.remove(socket),

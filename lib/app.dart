@@ -5,19 +5,28 @@ import 'dart:io';
 
 class OneBotApp {
   List<Comm> comms = [];
-  void Function(Bot, Event) eventHandler;
+  void Function(Bot, Event)? eventHandler;
+  void Function(Bot, Event, dynamic)? eventHandlerOnError;
   final EventParser eventParser;
-  OneBotApp(this.eventHandler,
-      {EventParser? eventParser, SegmentParser? segmentParser})
+  OneBotApp({EventParser? eventParser, SegmentParser? segmentParser})
       : eventParser =
             eventParser ?? EventParser(segmentParser ?? SegmentParser());
   void handleEvent(Bot bot, Event event) async {
-    eventHandler(bot, event);
+    if (eventHandler != null) {
+      try {
+        eventHandler!(bot, event);
+      } catch (e) {
+        if (eventHandlerOnError != null) {
+          eventHandlerOnError!(bot, event, e);
+        }
+      }
+    }
   }
 
   int start({List<WSSConfig>? wssConfigs}) {
     for (final config in wssConfigs ?? []) {
       final wss = WSS(config);
+      logger.info('start websocket server on ${config.url()}');
       wss.appStart(this);
       comms.add(wss);
     }
@@ -29,6 +38,12 @@ class OneBotApp {
       comm.close();
     }
     comms.clear();
+  }
+
+  void onEvent(void Function(Bot, Event) handler,
+      {void Function(Bot, Event, dynamic)? onError}) {
+    eventHandler = handler;
+    eventHandlerOnError = onError;
   }
 }
 
