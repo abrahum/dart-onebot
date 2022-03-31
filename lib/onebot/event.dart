@@ -1,7 +1,13 @@
 import 'dart:convert';
-import 'package:onebot/onebot.dart';
+import 'message.dart';
+import 'utils.dart';
+import 'error.dart';
+import 'action.dart';
 
-const standardEventBuilderMap = {
+typedef EventMap = Map<String,
+    Map<String, Event Function(Map<String, dynamic>, SegmentParser)>>;
+
+const EventMap standardEventBuilderMap = {
   MetaEvent.ty: {HeartbeatEvent.detailTy: HeartbeatEvent._fromJson},
   MessageEvent.ty: {
     PrivateMessageEvent.detailTy: PrivateMessageEvent._fromJson,
@@ -10,13 +16,9 @@ const standardEventBuilderMap = {
 };
 
 class EventParser {
-  late final Map<String,
-      Map<String, Event Function(Map<String, dynamic>, SegmentParser)>> map;
+  late final EventMap map;
   late final SegmentParser segmentParser;
-  EventParser(this.segmentParser,
-      [Map<String,
-              Map<String, Event Function(Map<String, dynamic>, SegmentParser)>>?
-          extra]) {
+  EventParser(this.segmentParser, [EventMap? extra]) {
     if (extra != null) {
       map = Map.from(standardEventBuilderMap)..addAll(extra);
     } else {

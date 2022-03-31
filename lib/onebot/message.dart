@@ -1,7 +1,9 @@
 import 'dart:convert';
-import 'package:onebot/onebot.dart';
+import 'utils.dart';
 
-const standardSegmentParserMap = {
+typedef SegmentMap = Map<String, Segment Function(Map<String, dynamic>)>;
+
+const SegmentMap standardSegmentParserMap = {
   TextSegment.ty: TextSegment.fromData,
   MentionSegment.ty: MentionSegment.fromData,
   MentionAllSegment.ty: MentionAllSegment.fromData,
@@ -15,8 +17,8 @@ const standardSegmentParserMap = {
 };
 
 class SegmentParser {
-  late final Map<String, Segment Function(Map<String, dynamic>)> map;
-  SegmentParser([Map<String, Segment Function(Map<String, dynamic>)>? extra]) {
+  late final SegmentMap map;
+  SegmentParser([SegmentMap? extra]) {
     if (extra != null) {
       map = Map.from(standardSegmentParserMap)..addAll(extra);
     } else {
@@ -34,7 +36,7 @@ class SegmentParser {
     return Segment(type, data);
   }
 
-  List<Segment> fromJsonList(List<Map<String, dynamic>> json) {
+  List<Segment> fromJsonList(List<dynamic> json) {
     return json.map((e) => fromJson(e)).toList();
   }
 }

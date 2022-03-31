@@ -1,7 +1,6 @@
 import 'dart:convert';
 
-import 'package:onebot/impl.dart';
-import 'package:onebot/message.dart';
+import 'package:rikka/onebot.dart';
 import 'package:test/test.dart';
 
 void main() {

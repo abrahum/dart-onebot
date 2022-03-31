@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:onebot/onebot.dart';
+import 'error.dart';
 
 extension MapTryExt<K, V> on Map<K, V> {
   V tryGet(K key) {

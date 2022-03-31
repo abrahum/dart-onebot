@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:toml/toml.dart';
-import 'package:onebot/onebot.dart';
+import 'package:rikka/onebot.dart';
 
 const String configPath = 'Rikka.toml';
 

@@ -1,4 +1,8 @@
-import 'package:onebot/onebot.dart';
+import 'action.dart';
+import 'message.dart';
+import 'comms.dart';
+import 'utils.dart';
+import 'event.dart';
 
 class OneBotImpl {
   String selfId;

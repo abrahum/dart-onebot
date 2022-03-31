@@ -1,6 +1,8 @@
 import 'dart:io';
-import 'package:onebot/app.dart';
-import 'package:onebot/onebot.dart';
+
+import 'package:rikka/onebot.dart';
+import 'package:rikka/rikka.dart' show logger;
+
 part 'comms.ws.dart';
 
 abstract class Comm {

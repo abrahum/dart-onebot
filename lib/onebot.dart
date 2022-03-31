@@ -3,17 +3,13 @@
 /// More dartdocs go here.
 library onebot;
 
-import 'package:logging/logging.dart';
-
-export 'event.dart';
-export 'message.dart';
-export 'impl.dart';
-export 'app.dart';
-export 'action.dart';
-export 'src/comms.dart';
-export 'src/error.dart';
-export 'src/utils.dart';
-
-final logger = Logger('onebot');
+export 'onebot/event.dart';
+export 'onebot/message.dart';
+export 'onebot/impl.dart';
+export 'onebot/app.dart';
+export 'onebot/action.dart';
+export 'onebot/comms.dart';
+export 'onebot/error.dart';
+export 'onebot/utils.dart';
 
 // TODO: Export any libraries intended for clients of this package.

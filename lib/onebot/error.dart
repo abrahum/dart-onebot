@@ -1,4 +1,4 @@
-import 'package:onebot/action.dart';
+import 'action.dart';
 
 class MissFieldError extends Error {
   final String field;

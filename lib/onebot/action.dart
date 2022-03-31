@@ -1,18 +1,19 @@
 import 'dart:convert';
-import 'package:onebot/onebot.dart';
+import 'message.dart';
+import 'utils.dart';
 
-const standardActionParserMap = {
+typedef ActionMap
+    = Map<String, Action Function(Map<String, dynamic>, SegmentParser)>;
+
+const ActionMap standardActionParserMap = {
   GetLatestEvents.ty: GetLatestEvents.fromData,
   SendMessage.ty: SendMessage.fromData,
 };
 
 class ActionParser {
-  late final Map<String, Action Function(Map<String, dynamic>, SegmentParser)>
-      map;
+  late final ActionMap map;
   late final SegmentParser segmentParser;
-  ActionParser(this.segmentParser,
-      [Map<String, Action Function(Map<String, dynamic>, SegmentParser)>?
-          extra]) {
+  ActionParser(this.segmentParser, [ActionMap? extra]) {
     if (extra != null) {
       map = Map.from(standardActionParserMap)..addAll(extra);
     } else {

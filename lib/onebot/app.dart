@@ -1,13 +1,15 @@
 import 'dart:isolate';
-
-import 'package:onebot/onebot.dart';
 import 'dart:io';
+
+import 'package:rikka/onebot.dart';
+import 'package:rikka/rikka.dart' show logger;
 
 class OneBotApp {
   List<Comm> comms = [];
   void Function(Bot, Event)? eventHandler;
   void Function(Bot, Event, dynamic)? eventHandlerOnError;
   final EventParser eventParser;
+  Set<Bot> bots = {};
   OneBotApp({EventParser? eventParser, SegmentParser? segmentParser})
       : eventParser =
             eventParser ?? EventParser(segmentParser ?? SegmentParser());
