@@ -1,1 +1,3 @@
-## (WIP) dart libonebot
+## (WIP) Rikka
+
+A dart onebot SDK
